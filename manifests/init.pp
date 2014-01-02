@@ -35,9 +35,12 @@
 # Copyright 2012 by Garrett Honeycutt
 # Copyright 2013 by Michael Moll
 #
-class nrpe ($allowed_hosts=['127.0.0.1']) {
+class nrpe ($allowed_hosts=['127.0.0.1'],$command_timeout='60') {
+
+if type($command_timeout) != 'integer' { fail('$command_timeout is not an integer') }
 
 validate_array($allowed_hosts)
+
 $ahosts = join( $allowed_hosts, ',' )
 
   $log_facility='daemon'
@@ -46,7 +49,6 @@ $ahosts = join( $allowed_hosts, ',' )
   $dont_blame_nrpe='0'
   $command_prefix='UNSET'
   $nrpedebug='0'
-  $command_timeout='60'
   $connection_timeout='300'
   $allow_weak_random_seed='UNSET'
   $includecfg='UNSET'
