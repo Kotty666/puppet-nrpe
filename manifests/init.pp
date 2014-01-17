@@ -70,12 +70,12 @@ $ahosts = join( $allowed_hosts, ',' )
       $root_group      = 'root'
     }
     'suse': {
-      $nrpe_cfg        = '/etc/nagios/nrpe.cfg'
+      $nrpe_cfg        = '/etc/nrpe.cfg'
       $pid_file        = '/var/run/nrpe/nrpe.pid'
       $nrpe_user       = 'nagios'
       $nrpe_group      = 'nagios'
-      $include_dir     = '/etc/nagios/nrpe.d/'
-      $nrpe_package    = 'nagios-nrpe'
+      $include_dir     = '/etc/nrpe.d/'
+      $nrpe_package    = 'nrpe'
       $nrpe_service    = 'nrpe'
       $plugins_package = 'nagios-plugins'
       $plugindir       = '/usr/lib/nagios/plugins'
