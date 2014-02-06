@@ -35,7 +35,7 @@
 # Copyright 2012 by Garrett Honeycutt
 # Copyright 2013 by Michael Moll
 #
-class nrpe ($allowed_hosts=['127.0.0.1'],$command_timeout='60') {
+class nrpe ($allowed_hosts=['127.0.0.1'],$command_timeout='60',$redhat_provider='rpmforge') {
 
 if type($command_timeout) != 'integer' { fail('$command_timeout is not an integer') }
 
@@ -55,19 +55,32 @@ $ahosts = join( $allowed_hosts, ',' )
 
   case $::osfamily {
     'redhat': {
-      $nrpe_cfg        = '/etc/nagios/nrpe.cfg'
-      $pid_file        = '/var/run/nrpe.pid'
-      $nrpe_user       = 'nagios'
-      $nrpe_group      = 'nagios'
-      $include_dir     = '/etc/nagios/nrpe.d/'
-      $nrpe_package    = 'nagios-nrpe'
+      case $redhat_provider {
+        'repoforge': {
+          $pid_file        = '/var/run/nrpe.pid'
+          $nrpe_user       = 'nagios'
+          $nrpe_group      = 'nagios'
+          $include_dir     = '/etc/nagios/nrpe.d/'
+          $nrpe_package    = 'nagios-nrpe'
+          $plugins_package = 'nagios-plugins'
+        }
+        'epel': {
+          $pid_file        = '/var/run/nrpe/nrpe.pid'
+          $nrpe_user       = 'nrpe'
+          $nrpe_group      = 'nrpe'
+          $include_dir     = '/etc/nrpe.d/'
+          $nrpe_package    = 'nrpe'
+          $plugins_package = 'nagios-plugins-all'
+        }
+        default: { fail() }
+      }
       $nrpe_service    = 'nrpe'
-      $plugins_package = 'nagios-plugins'
+      $nrpe_cfg        = '/etc/nagios/nrpe.cfg'
+      $root_group      = 'root'
       case $::architecture {
         'x86_64': { $plugindir = '/usr/lib64/nagios/plugins' }
         default:  { $plugindir = '/usr/lib/nagios/plugins' }
       }
-      $root_group      = 'root'
     }
     'suse': {
       $nrpe_cfg        = '/etc/nrpe.cfg'
