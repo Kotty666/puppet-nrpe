@@ -60,7 +60,10 @@ $ahosts = join( $allowed_hosts, ',' )
       $nrpe_user       = 'nagios'
       $nrpe_group      = 'nagios'
       $include_dir     = '/etc/nagios/nrpe.d/'
-      $nrpe_package    = 'nagios-nrpe'
+      case $::lsbmajdistrelease {
+        '7':     { $nrpe_package = 'nrpe' }
+        default: { $nrpe_package = 'nagios-nrpe' }
+      }
       $nrpe_service    = 'nrpe'
       $plugins_package = 'nagios-plugins'
       case $::architecture {
