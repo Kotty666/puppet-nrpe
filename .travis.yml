@@ -41,9 +41,9 @@ notifications:
   email: false
 deploy:
   provider: puppetforge
-  user: puppet
+  user: kotty666
   password:
-    secure: ""
+    secure: iRWMT16dgOTRm9HcSfcEpp54FMa2FPsDcqYCo4PLnPtsGnXB/kpPb5o3Ft3Hd6pLqZovGzCXXqOc6HZnbpC+zdsh68wlS00vhT3UJJD3m0sbA/3J9QlTz/GelY/9h1e6W3I3WWBmmyh7aHpG8zTlvFPY5PgsNma5Y8AE9W+Yg9XQKS9X9iCsMnUf5WUPKtem3XslWS3ewYO+hZTTMU7ThTVoJjwRha1M5tBTxiUupSEXosEutaPmkKNM9vF0iFI0XR+9N5OxBKtxoK8pJQkM1H9oLAxIfe1GHBX/ZBdyqxOxxuJ1huo/ZYBNqs1FyKzGLrP7CXMyiZ6pPzNnsuwl0hj/26kBbG9G7hVeCf1GODwL27WVwVBW+htUlxgx7bCB2x1DbElWIJymgfrVMNzNRwNLeSs17yL8B9orSX9ksxnrXjF7plVZ0E0N+GYZUNP/WJXeaR8yt+ZnAEK97+GGKGQ1JhB22vx6uk+wWVxAL7Picnp8iSPsbLAFqyfgDR7lhkwYSon4YpW8+R+qdIybZxwJ9sY0adL7ArFzQJG8D2enTw9a6Xi4HWrxmrkFY5yKrbwxpI96AapuU3kecvtVbngsjr9W+HU9tXy7nkmhYx99zv50QTJt9fQg+ZXW565+kTa2eqavzbsqsCphu+aa/mlhcxbSpcyPtlRayxSqc0I=
   on:
     tags: true
     all_branches: true
