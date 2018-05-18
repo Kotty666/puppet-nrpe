@@ -1,0 +1,14 @@
+---
+:backends:
+  - yaml
+:hierarchy:
+  - "os/%{::facts.osfamily}/%{::facts.os.name}-%{::facts.os.release.full}"
+  - "os/%{::facts.osfamily}/%{::facts.os.name}-%{::facts.os.release.major}"
+  - "os/%{::facts.osfamily}/%{::facts.os.name}"
+  - "os/%{::facts.osfamily}/common"
+  - "common"
+
+:yaml:
+  :datadir: hieradata
+
+:merge_behavior: deeper

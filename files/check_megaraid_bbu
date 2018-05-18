@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+MEGACLI="/usr/local/sbin/megacli64"
+retval=0
+
+if [ ! -x "${MEGACLI}" ]; then
+  echo "ERROR: ${MEGACLI} is not an executable or does not exist"
+  exit 255
+fi
+
+## Get MegaCLI Controllers
+AdpCnt=$( sudo "${MEGACLI}" -AdpAllInfo -aALL | grep ^Adapter | awk -F"#" "{ print \$NF }")
+
+##
+if [ -n "${AdpCnt}" ]; then
+for i in ${AdpCnt}; do
+  bburepl=$( sudo "${MEGACLI}" -AdpBbuCmd -GetBbuStatus -a${i}  | grep -i Battery\ Replacement\ required | awk "{ print \$NF }")
+  if [ "${bburepl}" == "Yes" ]; then
+    let retval=+1
+  fi
+  if [ "${bburepl}" == "" ]; then
+    let retval=255
+  fi
+done
+else
+  retval=255
+fi
+
+if [ "$retval" == 0 ]; then
+  RC=0
+  echo "BBU ok"
+elif [ "$retval" == 255 ]; then
+  ## huba
+  RC=255
+  echo "WARNING: no BBU available or check failed for unknown reasons"
+else
+  RC=2
+  echo "ERROR: BBU needs replacement"
+fi
+
+exit ${RC}
+

@@ -1,0 +1,3 @@
+---
+nrpe::plugins_package: 'monitoring-plugins-nrpe'
+

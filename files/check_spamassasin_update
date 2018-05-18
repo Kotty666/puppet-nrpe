@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Hole aktuellste Versionsnummer
+#time2="foo"
+time=$(dig TXT +short 0.4.3.updates.spamassassin.org | sed 's/\"//g')
+# Hole aktuell installierte Versionssnummer
+time2=$(head -1 /var/lib/spamassassin/3.004000/updates_spamassassin_org.cf | awk '{print $4}')
+
+
+#Überprüfe wie sich die Versionsnummern zueinander verhalten.
+if [ $time == $time2 ]; then
+  echo "Alles gut" && exit 0
+
+elif [ $time -gt $time2 ]; then
+  echo "Datei zu alt" && exit 2
+
+else
+  echo "Unbekannter Fehler" && exit 3
+
+fi

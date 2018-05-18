@@ -1,0 +1,24 @@
+#!/bin/bash
+
+############################################################## 
+# This file is managed by puppet. Manual editing is strongly
+# discouraged and might lead to unexpected behaviour!
+##############################################################
+
+MISSING=""
+
+for dir in /var/www/*; do
+	if [ -z "$(echo $dir | grep "/var/www/`hostname`$")" ]; then
+		ls -ld $dir/logs > /dev/null 2>&1
+		exists=$?
+		[ "$exists" != "0" ] && MISSING="$MISSING $dir"
+	fi
+done
+
+if [ -n "$MISSING" ]; then
+	echo "Es fehlen Logverzeichnisse: $MISSING"
+	exit 1
+fi
+
+echo "Alle Logverzeichnisse vorhanden"
+exit 0

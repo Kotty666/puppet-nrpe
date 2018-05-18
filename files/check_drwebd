@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# (c) 2004 Florian Sippel <flo@noris.de>
+# Modified for Dr. Web; 2007-01-05 <gliniak@noris.de>
+
+SOCKET="/var/drweb/run/.daemon"
+
+if [ ! -e $SOCKET ]; then
+        echo "Kritisch: DrWeb Virus Scanner laeuft nicht!"
+        exit 2
+fi
+SCAN=`/opt/drweb/drwebdc -u /var/drweb/run/.daemon -q -orv - <<<'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*' | grep "EICAR Test File" | wc -l`
+
+if [ "$SCAN" -eq 1 ]; then
+        echo "OK: Eicar Testvirus wurde erkannt."
+        exit 0
+else
+        echo "Kritisch: Eicar Testvirus wurde nicht erkannt!"
+        exit 2
+fi
+
+

@@ -1,0 +1,9 @@
+#!/bin/bash
+sudo /usr/sbin/freeradius -l /dev/null -Cf
+if [ $? == 0 ]; then
+  echo "OK"
+  exit 0
+else
+  echo "FAIL"
+  exit 2
+fi

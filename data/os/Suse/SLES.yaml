@@ -1,0 +1,4 @@
+---
+nrpe::nrpe_cfg: '/etc/ntpe.cfg'
+nrpe::include_dir: '/etc/nrpe.d/'
+nrpe::nrpe_package: 'nrpe'

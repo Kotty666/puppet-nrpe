@@ -1,0 +1,75 @@
+---
+lookup_options:
+  nrpe::allowed_hosts:
+    merge:
+      strategy: deep
+  nrpe::allow_weak_random_seed:
+    merge:
+      strategy: deep
+  nrpe::bytes_critical:
+    merge:
+      strategy: deep
+  nrpe::bytes_warning:
+    merge:
+      strategy: deep
+  nrpe::command_prefix:
+    merge:
+      strategy: deep
+  nrpe::command_timeout:
+    merge:
+      strategy: deep
+  nrpe::connection_timeout:
+    merge:
+      strategy: deep
+  nrpe::dont_blame_nrpe:
+    merge:
+      strategy: deep
+  nrpe::includecfg:
+    merge:
+      strategy: deep
+  nrpe::include_dir:
+    merge:
+      strategy: deep
+  nrpe::log_facility:
+    merge:
+      strategy: deep
+  nrpe::nrpe_cfg:
+    merge:
+      strategy: deep
+  nrpe::nrpedebug:
+    merge:
+      strategy: deep
+  nrpe::nrpe_group:
+    merge:
+      strategy: deep
+  nrpe::nrpe_package:
+    merge:
+      strategy: deep
+  nrpe::nrpe_service:
+    merge:
+      strategy: deep
+  nrpe::nrpe_user:
+    merge:
+      strategy: deep
+  nrpe::percent_check_limit:
+    merge:
+      strategy: deep
+  nrpe::pid_file:
+    merge:
+      strategy: deep
+  nrpe::plugindir:
+    merge:
+      strategy: deep
+  nrpe::plugins_package:
+    merge:
+      strategy: deep
+  nrpe::root_group:
+    merge:
+      strategy: deep
+  nrpe::server_address:
+    merge:
+      strategy: deep
+  nrpe::server_port:
+    merge:
+      strategy: deep
+

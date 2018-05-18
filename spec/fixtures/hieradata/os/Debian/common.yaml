@@ -1,0 +1,4 @@
+---
+nrpe::pid_file: '/var/run/nagios/nrpe.pid'
+nrpe::nrpe_package: 'nagios-nrpe-server'
+nrpe::nrpe_service: 'nagios-nrpe-server'

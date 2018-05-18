@@ -1,4 +1,8 @@
 ########################################
 # PUPPET MANAGED
 ########################################
+<% if @run_as != '' -%>
+command[<%= @cmdname %>] = /usr/bin/sudo -u <%= @run_as -%> <%= File.join(@cwd, @cmd) %>
+<% else %>
 command[<%= @cmdname %>] = <%= File.join(@cwd, @cmd) %>
+<% end %>

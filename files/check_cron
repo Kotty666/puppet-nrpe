@@ -1,0 +1,27 @@
+#!/bin/bash
+
+WARN=660
+CRIT=960
+
+TESTFILE="/var/run/cronmonitor"
+
+if [ ! -e $TESTFILE ]; then
+        echo "Testfile $HOSTNAME:$TESTFILE nicht vorhanden!"
+        exit 1
+fi
+
+NOW=`date "+%s"`
+FILEDATE=`date "+%s" -r $TESTFILE`
+
+let "DELTA=$NOW-$FILEDATE"
+
+if [ $DELTA -lt $WARN ] ; then
+        echo "Alles OK. Letzer CRON vor $DELTA Sekunden"
+        exit 0
+elif [ $DELTA -lt $CRIT ] ; then
+        echo "WARNING. Letzer CRON vor $DELTA Sekunden"
+        exit 1
+else
+        echo "CRITICAL. Letzter CRON vor $DELTA Sekunden"
+        exit 2
+fi

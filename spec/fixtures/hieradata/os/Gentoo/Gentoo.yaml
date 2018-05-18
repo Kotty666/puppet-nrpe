@@ -1,0 +1,5 @@
+---
+nrpe::nrpe_package: 'nrpe'
+nrpe::pid_file: '/var/run/nrpe.pid'
+nrpe::plugindir: '/usr/lib64/nagios/plugins/'
+nrpe::plugins_package: 'monitoring-plugins'

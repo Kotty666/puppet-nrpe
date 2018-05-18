@@ -1,0 +1,58 @@
+#!/usr/bin/python
+# Deps: python-boto
+
+from boto import connect_s3
+from boto.s3 import connection
+from boto.s3.key import Key
+from distutils.version import LooseVersion as Version
+from glob import glob
+from json import loads
+from commands import getoutput
+from sys import exit, argv
+
+conn = connect_s3(aws_access_key_id="SWEXD4TB7CMIXN3DHXQ3",aws_secret_access_key="kbg7a3Nv9x2auM7DFN8LGqTqx2atigSDkiJOTDbF",host="rgw.noris.net",calling_format = connection.OrdinaryCallingFormat())
+
+b = conn.get_bucket("monitor")
+k = Key(b)
+
+k.key = argv[1]
+
+try:
+  saved_version = k.get_contents_as_string()
+except:
+  saved_version = "0"
+
+saved_mayor = int(saved_version.split(".")[0])
+
+old_versions={}
+mayor_version_difference=False
+
+if len(glob('/var/run/ceph/*.asok')):
+  for socket in glob('/var/run/ceph/*.asok'):
+    running_version = loads(getoutput('timeout 60 ceph --admin-daemon ' + socket + ' version 2>/dev/null'))['version']
+    if Version(running_version) < Version(saved_version):
+      osd=socket.split(".")[1]
+      old_versions[osd] = running_version
+      if int(running_version.split(".")[0]) < saved_mayor:
+        mayor_version_difference = True
+    elif Version(running_version) > Version(saved_version):
+      k.set_contents_from_string(running_version)
+      saved_version=running_version
+else:
+  running_version=getoutput('ceph -v').split(" ")[2]
+  if Version(running_version) != Version(saved_version):
+    old_versions['installed'] = running_version
+    if int(running_version.split(".")[0]) < saved_mayor:
+      mayor_version_difference = True
+
+if len(old_versions):
+  print "Newest Version in Cluster:", saved_version, "Old Versions on This Host:"
+  for daemon in old_versions:
+    print "daemon:", daemon , "still at version:", old_versions[daemon]
+  if mayor_version_difference:
+    exit(1)
+  else:
+    exit(2)
+
+print "All daemons running at newest Version in Cluster:", saved_version
+exit(0)

@@ -1,0 +1,85 @@
+#!/bin/bash
+
+# Nagios return codes
+STATE_OK=0
+STATE_WARNING=1 # Not used in here
+STATE_CRITICAL=2
+STATE_UNKNOWN=3
+
+# Temp code
+MOUNTPOINT=""
+REMOTENFS=""
+
+PROGNAME=$(basename $0)
+#RAND_STRING=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 5 | head -n 1)
+RAND_STRING=$RANDOM
+
+check_baseprogs() {
+for BASEPROG in mount awk grep touch rm ; do
+	if [ ! -x "$(which ${BASEPROG})" ]; then
+		echo "UNKNOWN: $BASEPROG not found or is not executable by the nagios user."
+		exit $STATE_UNKNOWN
+	fi
+done
+}
+
+print_usage() {
+	echo ""
+	echo "$PROGNAME - NFS mount + rw check for Nagios"
+	echo ""
+	echo "Usage: check_nfs.sh <remote nfs share>"
+	echo ""
+}
+
+is_mounted() {
+	if [ -n "$MOUNTPOINT" ]; then
+		MOUNTPOINT="$(mount | awk -v RNFS="${REMOTENFS}" '$1 == RNFS {print $3}')"
+	else
+		echo "CRITICAL: ${REMOTENFS} not mounted!"
+		exit $STATE_CRITICAL
+	fi
+}
+
+is_writable() {
+	if [ $(touch ${MOUNTPOINT}/nagios.${RAND_STRING} 2> /dev/null; echo "$?") -eq 0 ]; then
+		rm ${MOUNTPOINT}/nagios.${RAND_STRING}
+	else
+		echo "CRITICAL: ${MOUNTPOINT} not writable!"
+		exit $STATE_CRITICAL 
+	fi
+}
+
+# Main
+check_baseprogs
+OPT_RO=0
+while test -n "$1" ; do
+	case "$1" in
+		--ro|--skip-rw)
+			OPT_RO=1
+			;;
+		--*)
+			echo "Unknown command line argument: $1" >&2
+			print_usage
+			exit $STATUS_UNKNOWN
+			;;
+		*)
+			REMOTENFS="$1"
+			;;
+	esac
+	shift
+done
+MOUNTPOINT="$(awk -v RNFS="${REMOTENFS}" '$1 == RNFS {print $2}' </proc/mounts)"
+if [ -z "$REMOTENFS" ] ; then
+	print_usage
+	exit $STATE_UNKNOWN
+fi
+if [ $OPT_RO -eq 0 ] ; then
+	is_mounted
+	is_writable
+	echo "OK: ${REMOTENFS} is mounted and writable!"
+	exit $STATE_OK
+else
+	is_mounted
+	echo "OK: ${REMOTENFS} is mounted!"
+	exit $STATE_OK
+fi

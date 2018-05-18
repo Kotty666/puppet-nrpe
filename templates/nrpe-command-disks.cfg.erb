@@ -1,0 +1,10 @@
+#############################
+# PUPPET MANAGED 
+# ###########################
+
+<% Puppet::Parser::Functions.autoloader.load(:is_hash) unless Puppet::Parser::Functions.autoloader.loaded?(:is_hash) %>
+<% Puppet::Parser::Functions.autoloader.load(:gsub) unless Puppet::Parser::Functions.autoloader.loaded?(:gsub) %>
+<% if scope.function_is_hash([@mounts]) %><% @mounts.each_pair do |k,v| %><% if v['size'] > 0 %>command[check_disk_<% if k.gsub(/\//, "") == "" -%>root<% else -%><%= k.gsub(/\//, "") %><% end -%>] = <% if v['size'] >= @percent_check_limit %><%= @cwd %>/check_disk -w <%= @bytes_warning %> -c <%= @bytes_critical %> -p <%= k %><% else %><%= @cwd %>/check_disk -w 10% -c 5% -p <%= k %>
+<% end %><% end %><% end %><% end %>
+
+

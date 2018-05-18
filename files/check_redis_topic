@@ -1,0 +1,15 @@
+#!/bin/bash
+
+host=$1
+topic=$2
+w_entries=$3
+c_entries=$4
+
+entries=$(redis-cli -h $host llen $topic)
+
+echo "$entries entries in $topic topic"
+
+[ "$entries" -lt "$w_entries" ] && exit 0
+[ "$entries" -lt "$c_entries" ] && exit 1
+[ "$entries" -ge "$c_entries" ] && exit 2
+exit 3

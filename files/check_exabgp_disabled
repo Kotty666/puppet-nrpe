@@ -1,0 +1,8 @@
+#!/bin/bash
+if [ -f /etc/exabgp/dns.disabled ] ; then
+ echo "Node is Disabled"
+ exit 3
+else
+ echo "Node is Online"
+ exit 0
+fi

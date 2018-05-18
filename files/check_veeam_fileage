@@ -1,0 +1,37 @@
+#!/bin/bash
+
+AGE_FILE="/etc/config/veeam-backup.log"
+
+WARN=1800
+CRIT=3600
+
+if [ -f $AGE_FILE ]; then
+	
+	AGE=$(stat -c %Z $AGE_FILE)
+	LENGTH=$(wc -l $AGE_FILE | awk '{ print $1 }')
+
+	NOW=$(date "+%s")
+
+	let "DELTA=$NOW-$AGE"
+
+	if [ $DELTA -gt $CRIT ]; then	
+		echo "Backup Age File too old ($DELTA Seconds)"
+		exit 2
+	elif [ $DELTA -gt $WARN ]; then
+		echo "Backup Age File too old ($DELTA Seconds)"
+		exit 1
+	else
+		if [ $LENGTH -gt 2 ]; then
+			echo "OK: Backup Age File $DELTA Seconds old"
+			exit 0
+		else 
+			echo "Backup Age File empty"
+			exit 2
+		fi
+	fi
+
+else
+	echo "No Backup Age File found"
+	exit 2
+fi
+

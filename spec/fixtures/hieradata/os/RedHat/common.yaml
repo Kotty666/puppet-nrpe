@@ -1,0 +1,6 @@
+---
+nrpe::include_dir: '/etc/nagios/nrpe.d/'
+nrpe::nrpe_service: 'nrpe'
+nrpe::pid_file: '/var/run/nrpe/nrpe.pid'
+nrpe::plugins_package: 'nagios-plugins'
+nrpe::root_group: 'root'

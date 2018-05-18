@@ -1,0 +1,4 @@
+---
+nrpe::nrpe_package: 'nrpe'
+nrpe::nrpe_user: 'nrpe'
+nrpe::nrpe_group: 'nrpe'

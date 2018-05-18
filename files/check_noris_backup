@@ -1,0 +1,24 @@
+#!/bin/bash
+# RT#518890
+
+CRIT=108000
+
+TESTFILE="/var/log/noris_backup"
+
+if [ ! -e $TESTFILE ]; then
+        echo "CRITICAL. Backup ist nicht konfiguriert"
+        exit 2
+fi
+
+NOW=`date "+%s"`
+FILEDATE=`date "+%s" -r $TESTFILE`
+
+let "DELTA=$NOW-$FILEDATE"
+
+if [ $DELTA -lt $CRIT ] ; then
+        echo "OK. Letzes Backup wurde vor $DELTA Sekunden gestartet"
+        exit 0
+else
+        echo "CRITICAL. Letztes Backup wurde vor mehr als $DELTA Sekunden gestartet"
+        exit 2
+fi

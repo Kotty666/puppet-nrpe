@@ -1,0 +1,15 @@
+#!/bin/bash
+
+#23449422 - Liste an excludes generieren
+EXCLUDES="iso-8859-1|ascii|binary"
+
+#Zunäst Dateien finden, die eine falsche Codierung hab
+files=$(file --mime-encoding /etc/nagios3/eventlog-blacklist/*-{system,application} | egrep -v "${EXCLUDES}")
+
+#Wenn keine Datei ein falsches encoding hat --> Voll super!
+
+if [ "$files" = "" ]; then
+  echo "Alles OK!" && exit 0  #Status OK
+else
+  echo "Folgende Dateien haben eine falsche Codierung: " && echo $files && exit 2  # Status Critical
+fi

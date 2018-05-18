@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# (c) 2004 Florian Sippel <flo@noris.de>
+# (c) 2015 modified by Jean-Denis Gebhardt <jean-denis.gebhardt@noris.de>
+
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+function usage {
+  echo "Usage:"
+  echo "$0 -e <exclude1|exclude2|exclude3> -c <num>"
+  echo "-c: mail older than x sec"
+  echo "-f: filter sender"
+  echo "-r: filter recipient"
+  echo "-e: recepients to exclude from search"
+  exit 0
+}
+
+[ ${#} -eq 0 ] && usage
+
+while getopts "c:f:r:e:h:" opt; do
+  case $opt in
+    c) CRIT=$OPTARG ;;
+    f) FROM="-f $OPTARG" ;;
+    r) TO="-r $OPTARG" ;;
+    e) EXCL="-r \'^((?!$OPTARG).)*$\'" ;;
+    h) usage ;;
+   \?) usage ;;
+  esac
+done
+
+[ -z "$CRIT" ] && CRIT=600
+
+exiqgrep -x -i $FROM $TO $EXCL -o $CRIT >/dev/null 2>&1
+[ $? -ne 0 ] && (echo "Error detected!"; exit 2)
+MAILQ=$(/usr/sbin/exiqgrep -x -i $FROM $TO $EXCL -o $CRIT | wc -l)
+
+if [ "$MAILQ" -eq 0 ]; then
+  echo "Keine Mail in der Queue ist aelter als $CRIT Sekunden."
+  exit 0
+else
+  echo "$MAILQ Mail$([ $MAILQ -gt 1 ] && echo 's') in der Queue ist aelter als $CRIT Sekunden."
+  exiqgrep -x $FROM $TO $EXCL -o $CRIT
+  exit 2
+fi

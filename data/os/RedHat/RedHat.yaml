@@ -1,0 +1,3 @@
+---
+nrpe::nrpe_package: 'nagios-nrpe'
+nrpe::plugindir: '/usr/lib64/nagios/plugins'

@@ -1,0 +1,62 @@
+#!/bin/sh
+
+# Nagios return codes
+STATE_OK=0
+STATE_WARNING=1
+STATE_CRITICAL=2
+STATE_UNKOWN=3
+
+STATE_MASTER_RW=5
+
+PROGNAME=$(basename $0)
+MASTER_HOST="$1"
+MASTER_IP=$(dig +short ${MASTER_HOST})
+DB_USER="$2"
+DB_PASSWD="$3"
+DB_SOCKET="$4"
+
+if [ $# -ne 4 ]; then
+  echo "Usage: $(basename $0) <V-IP Hostname> <monitoring user> <monitoring passwd> <mysql socket>" 
+  exit $STATE_UNKOWN
+fi
+
+is_master() {
+	if [ $(ip addr show | grep -c ${MASTER_IP}) -gt 0 ]; then
+		master="true"
+	elif [ $(ip addr show | grep -c ${MASTER_IP}) -eq 0 ]; then
+		master="false"
+	else
+		echo "UNKOWN: Cannot read output in is_master()"
+		exit $STATE_WARNING
+	fi
+}
+
+is_readonly() {
+
+	if [ "$(mysql -u ${DB_USER} --password=${DB_PASSWD} -S ${DB_SOCKET} -e "SHOW GLOBAL VARIABLES LIKE 'read_only';" | grep -o ON)" = "ON" ]; then
+		read_only="true"
+	elif [ "$(mysql -u ${DB_USER} --password=${DB_PASSWD} -S ${DB_SOCKET} -e "SHOW GLOBAL VARIABLES LIKE 'read_only';" | grep -o OFF)" = "OFF" ]; then
+		read_only="false"
+	else
+		echo "UNKOWN: Cannot read output in is_readonly()"
+		exit $STATE_WARNING
+	fi
+}
+
+# Main
+is_master
+is_readonly
+
+if [ $master = "true" ] && [ $read_only = "false" ]; then
+	echo "OK: Host is master and NOT read_only"
+	exit $STATE_OK
+elif [ $master = "false" ] && [ $read_only = "true" ]; then
+	echo "OK: Host is slave and read_only"
+	exit $STATE_OK
+elif [ $master = "true" ] && [ $read_only = "true" ]; then
+	echo "CRITICAL: Host is master and read_only"
+	exit $STATE_CRITICAL
+else
+	echo "CRITICAL: Host is slave and NOT read_only"
+	exit $STATE_CRITICAL
+fi

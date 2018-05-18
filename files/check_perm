@@ -1,0 +1,235 @@
+#!/bin/bash
+
+############################################################## 
+# This file is managed by puppet. Manual editing is strongly
+# discouraged and might lead to unexpected behaviour!
+##############################################################
+
+#=================
+# check_perm
+# 
+# Description: Um Dateien, Verzeichnisse (etc.) auf bestimmte
+#              Dateirechte zu überprüfen.
+#
+# ToDo: Was leider nicht so toll gelöst wurde, ist die
+#       Überprüfung der unterschiedlichen Suchmethoden.
+#       Wollte es ursprünglich über einfache Optionen
+#       umsetzen, was aber nicht funktionierte, da man
+#       immer an unterschiedlichen Stellen quoten muss.
+#       Siehe: find_regex(), find_files() und find_file().
+
+
+# case -t file
+WHAT_0[0]="Die angegebene Datei"
+WHAT_1[0]="Folgende Datei"
+WHAT_2[0]="Dateien"
+WHAT_X[0]="keine Datei"
+
+# case -t dir
+WHAT_0[1]="Das angegebene Verzeichnis"
+WHAT_1[1]="Folgendes Verzeichnis"
+WHAT_2[1]="Verzeichnisse"
+WHAT_X[1]="kein Verzeichnis"
+
+STATE_OK=0
+STATE_WARN=1
+STATE_CRIT=2
+STATE_UNKN=3
+
+LEVEL=1
+ERROR=1
+
+while getopts ":w: :p: :l: :t: :h :help" opt; do
+
+    case $opt in
+
+        w)
+            WHAT="$OPTARG"
+            ERROR=0
+        ;;
+
+        p)
+            PERM="$OPTARG"
+            ERROR=0
+        ;;
+
+        l)
+            LEVEL="$OPTARG"
+            ERROR=0
+	;;
+
+	t) 
+	    if [ "$OPTARG" == "file" ]; then
+                TYPE="f"
+                TNR=0
+            elif [ "$OPTARG" == "dir" ]; then
+                TYPE="d"
+                TNR=1
+            else
+                echo "UNKNOWN: Falsches Argument in Option -t: '$OPTARG'"
+                exit $STATE_UNKN
+            fi
+            ERROR=0
+        ;;
+
+        h|help)
+            echo "
+SYNOPSE:
+
+  $0 -w <WHAT> -t <TYPE> -p <PERMISSION> [ -l <LEVEL> ]
+
+
+Gültige Optionen:
+
+  -w        WHAT - Gibt an, was gecheckt werden soll. Der Check kann/muss in der Zeile 'case \$WHAT in' definiert werden.
+                   Beispiel: -w VhostDirectories
+                       oder: -w MeinEigenerCheck
+
+  -t        TYPE - Gibt den Typ an, ob es eine Datei oder ein Verzeichnis ist.
+                   Beispiel: -t dir
+                       oder: -t file
+
+  -p        PERMISSIONS - Gibt an, welche Dateizugriffsrechte für <TYPE> gesetzt sein sollte.
+                   Beispiel: -p 640
+
+  -l        LEVEL - Gibt an, wie viele Unterverzeichnisse zusätzlich durchsucht werden sollen. (Default: 1)
+                   Beispiel: -l 3
+
+  [-h|help]
+            Um (nur) diese Hilfe auszugeben.
+
+
+Autor
+    Stefan Steiner
+    noris network AG    
+"
+            exit
+        ;;
+
+        *)
+            echo "UNKNOWN: Invalid option. Kenne die Optione -$OPTARG nicht."
+            exit $STATE_UNKN
+        ;;
+
+    esac
+done
+
+[ -z $PERM ] && echo "UNKNOWN: No permission set."                   && ERROR=1
+[ -z $WHAT ] && echo "UNKNOWN: No file or directory name specified." && ERROR=1
+[ -z $TYPE ] && echo "UNKNOWN: No type set."                         && ERROR=1
+
+[ $ERROR -ne 0 ] && exit $STATE_UNKN 
+
+function find_regex() {
+
+    STRING="$1/$5"
+    EXIST=`find $1 -mindepth 1 -maxdepth $2 -type $3 -and -regex "$STRING"`
+    MATCH=`find $1 -mindepth 1 -maxdepth $2 -type $3 -not -perm $4 -and -regex "$STRING"`
+    SUMMARY=`echo $EXIST | wc -w`
+}
+
+function find_files() {
+
+    STRING=`echo $5 | sed 's/ / -or -name /g'`
+
+    EXIST=`find $1 -mindepth 1 -maxdepth $2 -type $3 -and \( -name $STRING \)`
+    MATCH=`find $1 -mindepth 1 -maxdepth $2 -type $3 -not -perm $4 -and \( -name $STRING \)`
+    SUMMARY=`echo $5 | wc -w`
+}
+
+function find_file() {
+
+    STRING=$5
+
+    EXIST=`find $1 -mindepth 1 -maxdepth $2 -type $3 -and -name "$STRING"`
+    MATCH=`find $1 -mindepth 1 -maxdepth $2 -type $3 -not -perm $4 -and -name "$STRING"`
+
+    SUMMARY=1
+}
+
+case $WHAT in
+
+    VhostDirectories) # PERM 550
+        DIR="/var/www"
+        FILES="\w*"
+
+        find_regex $DIR $LEVEL $TYPE $PERM "$FILES" 
+
+    ;;
+
+    WebSpaces) # PERM 750
+        DIR="/var/www/*"
+        FILES="cgi-bin data htdocs logs"
+
+        find_files "$DIR" $LEVEL $TYPE $PERM "$FILES"
+    ;;
+
+    Passwds) # PERM 644
+        DIR="/etc"
+        FILES="passwd- passwd.system passwd.vhost"
+
+        find_files "$DIR" $LEVEL $TYPE $PERM "$FILES"
+    ;;
+
+    Passwd) # PERM 600
+        DIR="/etc"
+        FILES="passwd"
+
+        find_file  "$DIR" $LEVEL $TYPE $PERM "$FILES"
+    ;;
+
+    PasswdVhostUsers) # PERM 640
+        DIR="/etc"
+        FILES="passwd.vhost-users"
+
+        find_file  "$DIR" $LEVEL $TYPE $PERM "$FILES"
+    ;;
+
+
+    *)
+        echo "UNKNOWN: Unknown job specified."
+        exit $STATE_UNKN
+    ;;
+
+esac
+
+
+
+if [ -z "$EXIST" ] ; then
+
+    echo "WARNING: Im angegebenen Ordner '$DIR' gibt es ${WHAT_X[$TNR]} Namens '$FILES'"
+    exit $STATE_WARN;
+
+fi
+
+
+
+COUNT=`echo "$MATCH" | wc -l`
+LIST=`echo "$MATCH" | sort`
+
+if [ -z "$MATCH" ] && [ -n "$EXIST" ]; then
+
+    if [ $SUMMARY -gt 1 ]; then
+        echo "OK: Alle $SUMMARY ${WHAT_2[$TNR]} in '$DIR' haben $PERM-Zugriffsrechte."
+    else
+        echo "OK: ${WHAT_0[$TNR]} in '$DIR' hat $PERM-Zugriffsrechte."
+    fi
+
+    exit $STATE_OK
+
+elif [ $COUNT -eq 1 ] ; then
+
+    echo "CRITICAL: ${WHAT_1[$TNR]} hat nicht die $PERM-Zugriffsrechte:
+$LIST"
+    exit $STATE_CRIT
+
+elif [ $COUNT -gt 1 ] ; then
+
+    echo "CRITICAL: $COUNT ${WHAT_2[$TNR]} haben nicht die $PERM-Zugriffsrechte:
+$LIST"
+    exit $STATE_CRIT
+
+else
+    echo "CRITICAL: Unbekannte Anzahl von ${WHAT_2[$TNR]}"
+    exit $STATE_CRIT
+fi

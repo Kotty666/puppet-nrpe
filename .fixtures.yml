@@ -1,0 +1,6 @@
+fixtures:
+  forge_modules:
+    stdlib: puppetlabs-stdlib
+    sudo: saz-sudo
+  symlinks:
+    nrpe: "#{source_dir}"

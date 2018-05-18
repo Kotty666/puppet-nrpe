@@ -1,0 +1,92 @@
+#!/bin/bash
+VERSION="check_uptime v1.21"
+
+# Exit-Codes:
+STATE_OK=0
+STATE_WARNING=1
+STATE_CRITICAL=2
+STATE_UNKNOWN=3
+
+usage()
+{
+cat << EOF
+usage: $0 [-c OPTION]|[-w OPTION] [-C OPTION]|[-W OPTION] [ -V ]
+
+This script checks uptime and optionally verifies if the uptime
+is below MINIMUM or above MAXIMUM uptime treshholds
+
+OPTIONS:
+   -h   Help
+   -c   CRITICAL MIN uptime (days)
+   -w   WARNING  MIN uptime (days)
+   -C   CRITICAL MAX uptime (days)
+   -W   WARNING  MAX uptime (days)
+   -V   Version
+EOF
+}
+
+while getopts c:w:C:W:Vv OPTION
+do
+  case $OPTION in
+    c)
+      MIN_CRITICAL=$OPTARG
+      [ ! "$?" = 0 ] && echo "Error: missing or illegal option value" && \
+      exit $STATE_UNKNOWN
+      ;;
+    w)
+      MIN_WARNING=$OPTARG
+      [ ! "$?" = 0 ] && echo "Error: missing or illegal option value" && \
+      exit $STATE_UNKNOWN
+      ;;
+    C)
+      MAX_CRITICAL=$OPTARG
+      [ ! "$?" = 0 ] && echo "Error: missing or illegal option value" && \
+      exit $STATE_UNKNOWN
+      ;;
+    W)
+      MAX_WARNING=$OPTARG
+      [ ! "$?" = 0 ] && echo "Error: missing or illegal option value" && \
+      exit $STATE_UNKNOWN
+      ;;
+    V)
+      echo $VERSION
+      exit $STATE_OK
+      ;;
+    v)
+      VERBOSE=1
+      ;;
+    ?)
+      usage
+      exit $STATE_UNKNOWN
+      ;;
+  esac
+done
+
+uptime=$(cat /proc/uptime)
+uptime=${uptime%%.*}
+
+days=$(( uptime/60/60/24 ))
+
+if [ $MIN_CRITICAL ] && [ $days -lt $MIN_CRITICAL ] ; then
+    text="CRITICAL - $days days | Uptime=$days;$MAX_WARNING;$MAX_CRITICAL;;"
+    exitcode=$STATE_CRITICAL
+
+  elif [ $MIN_WARNING ] && [ $days -lt $MIN_WARNING ] ; then
+    text="WARNING - $days days | Uptime=$days;$MAX_WARNING;$MAX_CRITICAL;;"
+    exitcode=$STATE_WARNING
+
+  elif [ $MAX_CRITICAL ] && [ $days -gt $MAX_CRITICAL ] ; then
+    text="CRITICAL - $days days | Uptime=$days;$MAX_WARNING;$MAX_CRITICAL;;"
+    exitcode=$STATE_CRITICAL
+
+  elif [ $MAX_WARNING ] && [ $days -gt $MAX_WARNING ] ; then
+    text="WARNING - $days days | Uptime=$days;$MAX_WARNING;$MAX_CRITICAL;;"
+    exitcode=$STATE_WARNING
+
+  else
+    text="OK - $days days | Uptime=$days;$MAX_WARNING;$MAX_CRITICAL;;"
+    exitcode=$STATE_OK
+fi
+
+echo $text
+exit $exitcode

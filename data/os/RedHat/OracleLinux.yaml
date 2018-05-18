@@ -1,0 +1,2 @@
+---
+nrpe::nrpe_cfg: '/etc/nrpe.cfg'

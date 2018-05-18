@@ -1,0 +1,42 @@
+#!/bin/sh
+
+# Nagios return codes
+STATE_OK=0
+STATE_WARNING=1
+STATE_CRITICAL=2
+STATE_UNKOWN=3
+
+
+PROGNAME=$(basename $0)
+MASTER_HOST="$1"
+MASTER_IP=$(dig +short ${MASTER_HOST})
+
+if [ $# -ne 1 ]; then
+  echo "Usage: $(basename $0) <V-IP Hostname>>" 
+  exit $STATE_UNKOWN
+fi
+
+is_master() {
+	if [ $(ip addr show | grep -c ${MASTER_IP}) -gt 0 ]; then
+		master="true"
+	elif [ $(ip addr show | grep -c ${MASTER_IP}) -eq 0 ]; then
+		master="false"
+	else
+		echo "UNKOWN: Cannot read output in is_master()"
+		exit $STATE_WARNING
+	fi
+}
+
+# Main
+is_master
+
+if [ $master = "true" ]; then
+  echo "is master"
+	exit $STATE_OK
+elif [ $master = "false" ]; then
+	echo "is not master"
+	exit $STATE_CRITICAL
+else
+	echo "UNKNOWN: Cannot read output!"
+	exit $STATE_WARNING
+fi

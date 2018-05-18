@@ -1,0 +1,54 @@
+#!/bin/bash
+#
+# Nagios plugin
+#
+# Check HP DataProtector pool-space.
+#
+# Copyright (C) 2015 Jean-Denis Gebhardt <jean-denis.gebhardt@noris.de>
+#
+
+function usage() {
+  /bin/echo -e "usage $0:
+$0 -p \"<Pool Name>\" [ -f \"<Free-Pool Name>\" ] [ -w \"<warn-int>\" ] [ -c \"<crit-int>\" ]
+  warn-int and crit-int in Percentage (Default: -w 75, -c 90)"
+  exit 3
+}
+
+function check() {
+  APO="'"
+  pool="$1"
+  /usr/bin/test "$2" && t=$(/opt/omni/bin/omnimm -show_pool "$FP" | /bin/awk -F ': ' '$1 ~ /Blocks total/ {print $2}')
+  /opt/omni/bin/omnimm -show_pool "$pool" |\
+    /bin/awk -v a="$APO" -v p="$1" -v w="$W" -v c="$C" -v t="$t" -F ': '\
+     'BEGIN {used = 0; total = 0};
+      $1 ~ /Blocks used/ && $2 > used {used = $2};
+      $1 ~ /Blocks total/ && $2 > used {total = t+$2};
+      END {
+        if ( total == 0) {
+          print "Pool \""p"\": empty | " a "Pool Size" a "= 0GB;0;0;0;0;";
+          exit 0;
+        } else {
+          print "Pool \""p"\": " total/1024 "GB Total; " used/1024"GB (" 100*used/total "%) Used | " a "Pool Size" a "=" used/1024"GB;" (w/100)*(total/1024) ";" (c/100)*(total/1024) ";0;"total/1024;
+          if ((100*used/total >= c))
+            exit 2;
+          else if ((100*used/total >= w && 100*used/total < c))
+            exit 1;
+          }
+      }'
+}
+
+W=75
+C=90
+
+while getopts "f:hp:w:c:" opt; do
+  case $opt in
+    f  ) FP="${OPTARG}" ;;
+    p  ) P="${OPTARG}" ;;
+    w  ) W="${OPTARG}" ;;
+    c  ) C="${OPTARG}" ;;
+    h | \?  ) usage ;;
+  esac
+done
+
+/usr/bin/test "${#}" -lt 2 && usage
+check $P $FP

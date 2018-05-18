@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if r=$(/usr/sbin/named-checkconf 2>&1); then
+	echo Konfiguration OK.
+else
+	echo Konfiguration fehlerhaft: $r
+	exit 2
+fi

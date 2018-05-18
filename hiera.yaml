@@ -1,0 +1,17 @@
+---
+version: 5
+defaults:
+  datadir: data
+  data_hash: yaml_data
+
+hierarchy:
+  - name: "merge Strategy"
+    path: "merge.yaml"
+  - name: "OS specific"
+    paths: 
+      - "os/%{::facts.osfamily}/%{::facts.os.name}-%{::facts.os.release.full}.yaml"
+      - "os/%{::facts.osfamily}/%{::facts.os.name}-%{::facts.os.release.major}.yaml"
+      - "os/%{::facts.osfamily}/%{::facts.os.name}.yaml"
+      - "os/%{::facts.osfamily}/common.yaml"
+  - name: "common"
+    path: "common.yaml"

@@ -1,0 +1,26 @@
+---
+nrpe::nrpe_package: 'nrpe'
+nrpe::allow_weak_random_seed: 'UNSET'
+nrpe::allowed_hosts: ['127.0.0.1']
+nrpe::bytes_critical: 1099511627776
+nrpe::bytes_warning: 10995116277760
+nrpe::command_prefix: 'UNSET'
+nrpe::command_timeout: 60
+nrpe::connection_timeout: 300
+nrpe::dont_blame_nrpe: 0
+nrpe::includecfg: []
+nrpe::log_facility: 'daemon'
+nrpe::nrpedebug: 0
+nrpe::percent_check_limit: 109951162777600
+nrpe::server_address: 'UNSET'
+nrpe::server_port: 5666
+nrpe::plugindir: '/usr/lib/nagios/plugins'
+nrpe::include_dir: '/etc/nagios/nrpe.d/'
+nrpe::nrpehasstatus: true
+nrpe::nrpe_cfg: '/etc/nagios/nrpe.cfg'
+nrpe::nrpe_group: 'nagios'
+nrpe::nrpe_user: 'nagios'
+nrpe::nrpe_service: 'nrpe'
+nrpe::pid_file: '/var/run/nrpe/nrpe.pid'
+nrpe::plugins_package: 'nagios-plugins'
+nrpe::root_group: 'root'
